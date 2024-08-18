@@ -35,5 +35,6 @@ select =[
   "S", # flake8-bandit
 ]
 ignore = [
+  "S101", # use assert
   "E501", # line-too-long, handled by black
 ]
