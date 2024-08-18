@@ -52,3 +52,6 @@ mlruns/
 
 # Drawio
 *.drawio.bkp
+
+# Databricks
+.databricks
