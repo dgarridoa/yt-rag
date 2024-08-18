@@ -16,8 +16,14 @@ class VideoCaptionsParams(CommonParams):
     channel_id: str
 
 
+class ChunkParams(CommonParams):
+    chunk_size: int = 500
+    chunk_overlap: int = 50
+
+
 class Params(BaseModel):
     video_captions: VideoCaptionsParams
+    chunk: ChunkParams
 
 
 def read_config():
