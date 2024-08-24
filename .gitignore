@@ -55,3 +55,6 @@ mlruns/
 
 # Databricks
 .databricks
+
+# Metastore
+metastore*
