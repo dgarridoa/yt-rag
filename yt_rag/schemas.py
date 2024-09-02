@@ -55,3 +55,14 @@ ContentSchema = StructType(
         StructField("content", StringType()),
     ]
 )
+
+ContentChunksSchema = StructType(
+    [
+        StructField("id", StringType()),
+        StructField("channel_id", StringType()),
+        StructField("video_id", StringType()),
+        StructField("title", StringType()),
+        StructField("publish_time", TimestampType()),
+        StructField("content", StringType()),
+    ]
+)

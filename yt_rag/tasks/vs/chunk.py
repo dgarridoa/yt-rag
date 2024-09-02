@@ -10,7 +10,7 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.types import ArrayType, StringType, StructType
 
 from yt_rag.params import ChunkParams, Params, read_config
-from yt_rag.schemas import ContentSchema
+from yt_rag.schemas import ContentChunksSchema
 from yt_rag.utils import write_delta_table
 
 
@@ -59,9 +59,21 @@ class ChunkTask:
         ) -> Iterator[pd.Series]:
             return read_as_chunk(splitter, batch_iter)
 
-        df_content_chunks = df_content.withColumn(
-            "content",
-            F.explode(read_as_chunk_udf("content")),  # type: ignore
+        columns = [col for col in df_content.columns if col != "content"]
+        df_content_chunks = (
+            df_content.select(
+                *columns,
+                F.posexplode(read_as_chunk_udf("content")).alias(  # type: ignore
+                    "index", "content"
+                ),
+            )
+            .withColumn(
+                "id",
+                F.concat(
+                    "channel_id", F.lit("_"), "video_id", F.lit("_"), "index"
+                ),
+            )
+            .drop("index")
         )
         return df_content_chunks
 
@@ -71,7 +83,7 @@ class ChunkTask:
         self.write(
             spark,
             df_content_chunks,
-            ContentSchema,
+            ContentChunksSchema,
             "content_chunks",
         )
 
