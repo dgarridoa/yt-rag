@@ -12,6 +12,7 @@ youtube-transcript-api = "^0.6.2"
 pydantic = "^2.8.2"
 pyspark = "3.5.0"
 delta-spark = "3.2.0"
+delta-sharing = "^1.0.5"
 pyarrow = ">=8.0.0"
 mlflow = {extras = ["databricks"], version = "2.11.3"}
 mlflow-skinny = {extras = ["databricks"], version = "2.11.3"}
