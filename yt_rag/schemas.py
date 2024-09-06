@@ -1,6 +1,7 @@
 from pyspark.sql.types import (
     ArrayType,
     DoubleType,
+    FloatType,
     StringType,
     StructField,
     StructType,
@@ -64,5 +65,17 @@ ContentChunksSchema = StructType(
         StructField("title", StringType()),
         StructField("publish_time", TimestampType()),
         StructField("content", StringType()),
+    ]
+)
+
+ContentChunksEmbeddingsSchema = StructType(
+    [
+        StructField("id", StringType()),
+        StructField("channel_id", StringType()),
+        StructField("video_id", StringType()),
+        StructField("title", StringType()),
+        StructField("publish_time", TimestampType()),
+        StructField("content", StringType()),
+        StructField("embedding", ArrayType(FloatType())),
     ]
 )
