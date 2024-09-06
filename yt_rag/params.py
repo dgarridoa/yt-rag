@@ -33,11 +33,18 @@ class VectorStoreRetrieverParams(CommonParams):
     k: int = 5
 
 
+class ChatParams(CommonParams):
+    endpoint_name: str
+    temperature: float = 0.0
+    max_tokens: int = 500
+
+
 class Params(BaseModel):
     video_captions: VideoCaptionsParams
     chunk: ChunkParams
     embedding: EmbeddingParams
     retriever: VectorStoreRetrieverParams
+    chat: ChatParams
 
 
 def read_config():
