@@ -21,9 +21,14 @@ class ChunkParams(CommonParams):
     chunk_overlap: int = 50
 
 
+class EmbeddingParams(CommonParams):
+    endpoint_name: str
+
+
 class Params(BaseModel):
     video_captions: VideoCaptionsParams
     chunk: ChunkParams
+    embedding: EmbeddingParams
 
 
 def read_config():
