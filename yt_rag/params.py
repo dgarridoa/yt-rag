@@ -25,10 +25,19 @@ class EmbeddingParams(CommonParams):
     endpoint_name: str
 
 
+class VectorStoreRetrieverParams(CommonParams):
+    table_url: str
+    M: int = 32
+    efConstruction: int = 40
+    efSearch: int = 10
+    k: int = 5
+
+
 class Params(BaseModel):
     video_captions: VideoCaptionsParams
     chunk: ChunkParams
     embedding: EmbeddingParams
+    retriever: VectorStoreRetrieverParams
 
 
 def read_config():
