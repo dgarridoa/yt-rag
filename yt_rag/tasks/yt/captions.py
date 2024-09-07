@@ -1,6 +1,9 @@
+import logging
+
 import pyspark.sql.functions as F
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.types import StructType
+from youtube_transcript_api._errors import CouldNotRetrieveTranscript
 
 from yt_rag.params import Params, VideoCaptionsParams, read_config
 from yt_rag.schemas import (
@@ -26,10 +29,14 @@ class VideoCaptionsTask:
         )
         video_transcripts = []
         for video in videos:
-            transcript = get_transcript_from_video(video.video_id)
-            video_transcripts.append(
-                VideoTranscript(video=video, transcript=transcript)
-            )
+            try:
+                transcript = get_transcript_from_video(video.video_id)
+                video_transcripts.append(
+                    VideoTranscript(video=video, transcript=transcript)
+                )
+            except CouldNotRetrieveTranscript as e:
+                logging.error(e.args[0])
+
         df_video_transcripts = spark.createDataFrame(
             [vt.model_dump() for vt in video_transcripts],
             schema=VideoTranscriptSchema,
