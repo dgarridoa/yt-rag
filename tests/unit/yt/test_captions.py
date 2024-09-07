@@ -12,7 +12,7 @@ video_id = "Guy5D3PJlZk"
 
 
 def test_get_videos_from_channel():
-    videos = get_videos_from_channel(channel_id)
+    videos = get_videos_from_channel(channel_id, 10)
     expected_videos = {
         Video(
             channel_id=channel_id,

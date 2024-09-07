@@ -14,6 +14,7 @@ class CommonParams(BaseModel):
 
 class VideoCaptionsParams(CommonParams):
     channel_id: str
+    timeout: int = 60
 
 
 class ChunkParams(CommonParams):

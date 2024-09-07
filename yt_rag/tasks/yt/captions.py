@@ -21,7 +21,9 @@ class VideoCaptionsTask:
         self.params = params
 
     def get_video_transcripts(self, spark: SparkSession) -> DataFrame:
-        videos = get_videos_from_channel(self.params.channel_id)
+        videos = get_videos_from_channel(
+            self.params.channel_id, self.params.timeout
+        )
         video_transcripts = []
         for video in videos:
             transcript = get_transcript_from_video(video.video_id)
