@@ -16,7 +16,7 @@ class EmbeddingTask:
     def read(self, spark: SparkSession, table_name: str) -> DataFrame:
         table_uri = f"{self.params.database}.{table_name}"
         if self.params.catalog:
-            table_uri = f"{self.params.catalog}.{table_uri}"
+            table_uri = f"`{self.params.catalog}`.{table_uri}"
         return spark.read.table(table_uri)
 
     def write(
@@ -28,7 +28,7 @@ class EmbeddingTask:
     ):
         table_uri = f"{self.params.database}.{table_name}"
         if self.params.catalog:
-            table_uri = f"{self.params.catalog}.{table_uri}"
+            table_uri = f"`{self.params.catalog}`.{table_uri}"
         write_delta_table(spark, df, schema, table_uri, "overwrite")
 
     def embedding(self, df_chunks: DataFrame):
