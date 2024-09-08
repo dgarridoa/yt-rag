@@ -1,0 +1,32 @@
+common: &common
+  env: dev
+  key_vault: kv-yt-rag
+  catalog: yt-rag
+  database: dev
+video_captions:
+  <<:
+    - *common
+  channel_id: UCUyeluBRhGPCW4rPe_UvBZQ
+  timeout: 60
+  language: en
+  use_proxy: true
+chunk:
+  <<:
+    - *common
+  chunk_size: 500
+  chunk_overlap: 50
+embedding:
+  <<:
+    - *common
+  endpoint_name: databricks-bge-large-en
+chat:
+  <<:
+    - *common
+  endpoint_name: databricks-meta-llama-3-1-405b-instruct
+  temperature: 0.1
+  max_tokens: 500
+retriever:
+  <<:
+    - *common
+  table_url: config.share#yt-rag-embeddings.dev.content_chunks_embedding
+  k: 5
