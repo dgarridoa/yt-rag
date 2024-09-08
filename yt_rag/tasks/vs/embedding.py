@@ -38,7 +38,7 @@ class EmbeddingTask:
         def get_embeddings_udf(contents: pd.Series) -> pd.Series:
             max_batch_size = 150
             batches = [
-                contents.iloc[i : i + max_batch_size]
+                list(contents.iloc[i : i + max_batch_size])
                 for i in range(0, len(contents), max_batch_size)
             ]
 
