@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 from functools import lru_cache
 
@@ -53,6 +54,14 @@ class Settings(BaseModel):
         os.environ["DATABRICKS_TOKEN"] = (
             settings.databricks_token.get_secret_value()
         )
+        with open("config.share", "w") as f:
+            delta_sharing_credential = json.loads(
+                get_secret_value_from_client(
+                    client, "delta-sharing-credential"
+                ).get_secret_value()
+            )
+            json.dump(delta_sharing_credential, f)
+
         return settings
 
 
