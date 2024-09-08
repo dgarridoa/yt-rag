@@ -39,6 +39,11 @@ pytest-cov = "^5.0.0"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.poetry.scripts]
+"captions" = "yt_rag.tasks.yt.captions:entrypoint"
+"chunk" = "yt_rag.tasks.vs.chunk:entrypoint"
+"embedding" = "yt_rag.tasks.vs.embedding:entrypoint"
+
 [tool.ruff]
 line-length = 79
 select =[
