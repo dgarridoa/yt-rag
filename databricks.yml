@@ -1,0 +1,106 @@
+bundle:
+  name: yt-rag
+
+artifacts:
+  wheel:
+    type: whl
+    path: ./
+    build: poetry build
+
+sync:
+  exclude:
+    - data/
+
+workspace:
+  auth_type: pat
+
+resources:
+  experiments:
+    mlflow-yt-rag:
+      name: ${workspace.root_path}/artifacts/${bundle.target}-${bundle.name}
+  jobs:
+    yt-rag:
+      name: ${bundle.target}-yt-rag
+      timeout_seconds: 3600
+      health:
+        rules:
+          - metric: RUN_DURATION_SECONDS
+            op: GREATER_THAN
+            value: 1800
+      job_clusters:
+        - job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
+          new_cluster:
+            spark_version: "15.3.x-cpu-ml-scala2.12"
+            spark_conf:
+              spark.databricks.sql.initial.catalog.name: "yt-rag"
+            spark_env_vars:
+              MLFLOW_EXPERIMENT_NAME: "${resources.experiments.mlflow-yt-rag.name}"
+              WORKSPACE_FILE_PATH: "/Workspace${workspace.root_path}/files"
+            num_workers: 1
+            node_type_id: Standard_DS3_v2
+            driver_node_type_id: Standard_DS3_v2
+            custom_tags:
+              ResourceClass: SingleNode
+      tasks:
+        - task_key: "captions"
+          job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
+          python_wheel_task:
+            package_name: "yt_rag"
+            entry_point: "captions"
+            parameters:
+            - "--conf-file"
+            - "/Workspace${workspace.root_path}/files/conf/${bundle.target}_config.yml"
+          libraries:
+            - whl: ./dist/*.whl
+        - task_key: "chunk"
+          depends_on:
+            - task_key: "captions"
+          job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
+          python_wheel_task:
+            package_name: "yt_rag"
+            entry_point: "chunk"
+            parameters:
+            - "--conf-file"
+            - "/Workspace${workspace.root_path}/files/conf/${bundle.target}_config.yml"
+          libraries:
+            - whl: ./dist/*.whl
+        - task_key: "embedding"
+          depends_on:
+            - task_key: "chunk"
+          job_cluster_key: "${bundle.target}-${bundle.name}-job-cluster"
+          python_wheel_task:
+            package_name: "yt_rag"
+            entry_point: "embedding"
+            parameters:
+            - "--conf-file"
+            - "/Workspace${workspace.root_path}/files/conf/${bundle.target}_config.yml"
+          libraries:
+            - whl: ./dist/*.whl
+targets:
+  dev:
+    mode: development
+    default: true
+  staging:
+    mode: production
+    workspace:
+      root_path: /Shared/.bundle/${bundle.name}/${bundle.target}
+    run_as:
+      user_name: diego.garrido.6568@gmail.com
+  prod:
+    mode: production
+    workspace:
+      root_path: /Shared/.bundle/${bundle.name}/${bundle.target}
+    run_as:
+      user_name: diego.garrido.6568@gmail.com
+    resources:
+      jobs:
+        yt-rag:
+          email_notifications:
+            on_start: ["diego.garrido.6568@gmail.com"]
+            on_success: ["diego.garrido.6568@gmail.com"]
+            on_failure: ["diego.garrido.6568@gmail.com"]
+            on_duration_warning_threshold_exceeded: [diego.garrido.6568@gmail.com]
+          schedule:
+            quartz_cron_expression: "16 59 23 ? * Mon"
+            timezone_id: "America/Santiago"
+            pause_status: "PAUSED"
