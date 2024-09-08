@@ -13,6 +13,7 @@ from yt_rag.schemas import (
 )
 from yt_rag.utils import write_delta_table
 from yt_rag.yt.captions import (
+    WATCH_URL,
     VideoTranscript,
     get_transcript_from_video,
     get_videos_from_channel,
@@ -28,14 +29,27 @@ class VideoCaptionsTask:
             self.params.channel_id, self.params.timeout
         )
         video_transcripts = []
+
         for video in videos:
+            video_url = WATCH_URL.format(video_id=video.video_id)
+            error_message = (
+                f"\nCould not retrieve a transcript for the video {video_url}!"
+            )
             try:
-                transcript = get_transcript_from_video(video.video_id)
+                transcript = get_transcript_from_video(
+                    video.video_id, self.params.language, self.params.proxies
+                )
                 video_transcripts.append(
                     VideoTranscript(video=video, transcript=transcript)
                 )
             except CouldNotRetrieveTranscript as e:
-                logging.error(e.args[0])
+                logging.error(
+                    f"{type(e).__name__}: {e.cause}.\n{error_message}"
+                )
+            except Exception as e:
+                logging.error(
+                    f"{type(e).__name__}: {e.args[0]}.\n{error_message}"
+                )
 
         df_video_transcripts = spark.createDataFrame(
             [vt.model_dump() for vt in video_transcripts],

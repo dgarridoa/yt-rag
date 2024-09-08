@@ -1,6 +1,7 @@
 import argparse
 import pathlib
 import sys
+from typing import Any
 
 import yaml
 from pydantic import BaseModel
@@ -8,6 +9,7 @@ from pydantic import BaseModel
 
 class CommonParams(BaseModel):
     env: str
+    key_vault: str = "kv-yt-rag"
     catalog: str | None = None
     database: str
 
@@ -15,6 +17,23 @@ class CommonParams(BaseModel):
 class VideoCaptionsParams(CommonParams):
     channel_id: str
     timeout: int = 60
+    language: str = "en"
+    use_proxy: bool = False
+    proxies: dict | None = None
+
+    def model_post_init(self, __context: Any) -> None:
+        if self.use_proxy is True:
+            try:
+                from databricks.sdk import WorkspaceClient
+
+                w = WorkspaceClient()
+                dbutils = w.dbutils
+            except ValueError:
+                from databricks.sdk.runtime import dbutils
+
+            self.proxies = {
+                "https": dbutils.secrets.get(self.key_vault, "HTTP-PROXY")
+            }
 
 
 class ChunkParams(CommonParams):

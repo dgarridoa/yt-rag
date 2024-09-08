@@ -13,7 +13,8 @@ conf = {
     "env": "default",
     "database": "default",
     "channel_id": "UC34rhn8Um7R18-BHjPklYlw",
-    "timeout": 10,
+    "timeout": 60,
+    "use_proxy": False,
 }
 params = VideoCaptionsParams.model_validate(conf)
 

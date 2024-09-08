@@ -5,6 +5,8 @@ from pydantic import BaseModel
 from requests.models import HTTPError
 from youtube_transcript_api import YouTubeTranscriptApi
 
+WATCH_URL = "https://www.youtube.com/watch?v={video_id}"
+
 
 class Video(BaseModel):
     channel_id: str
@@ -76,10 +78,10 @@ def get_videos_from_channel(channel_id: str, timeout: int = 5) -> set[Video]:
 
 
 def get_transcript_from_video(
-    video_id: str, language: str = "en"
+    video_id: str, language: str = "en", proxies: dict | None = None
 ) -> list[Caption]:
     captions = YouTubeTranscriptApi.get_transcript(
-        video_id, languages=[language]
+        video_id, languages=[language], proxies=proxies
     )
     captions = [Caption(**caption) for caption in captions]
     return captions
