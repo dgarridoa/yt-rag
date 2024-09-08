@@ -23,6 +23,8 @@ langchain-community = "^0.2.7"
 faiss-cpu = {version = "^1.8.0.post1", platform = "linux"}
 fastapi = "^0.112.0"
 uvicorn = {extras = ["standard"], version = "^0.30.5"}
+azure-identity = "^1.17.1"
+azure-keyvault-secrets = "^4.8.0"
 
 [tool.poetry.group.dev.dependencies]
 databricks-sdk = "^0.29.0"
