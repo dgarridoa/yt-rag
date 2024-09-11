@@ -1,10 +1,12 @@
+import os
+
 import requests
 import streamlit as st
 
 from yt_rag.settings import get_settings
 
 settings = get_settings()
-url = "http://localhost:5000/rag"
+url = os.getenv("API_ENDPOINT", "http://localhost:5000/rag")
 
 st.title("💬 Chatbot")
 st.caption("🚀 RAG powered by LLama 3.1")
