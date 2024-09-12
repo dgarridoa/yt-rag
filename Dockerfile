@@ -7,9 +7,7 @@ RUN apt update && apt -y install openjdk-17-jdk
 RUN curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
 
 # Install Poetry
-ENV POETRY_HOME=/opt/poetry
-ENV PATH="$PATH:$POETRY_HOME/bin"
-RUN curl -sSL https://install.python-poetry.org | python3 - --version 1.8.3
+RUN pip install poetry==1.8.3
 
 # Set working directory
 WORKDIR /app
