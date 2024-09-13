@@ -6,9 +6,12 @@ from datetime import datetime
 from typing import Annotated
 
 import yaml
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel, Field
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_ipaddr
 
 from yt_rag.conn import get_spark
 from yt_rag.params import Params
@@ -108,10 +111,10 @@ async def lifespan(app: FastAPI):
     spark.stop()
 
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("uvicorn")
-
+limiter = Limiter(key_func=get_ipaddr)
 app = FastAPI(lifespan=lifespan)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
 security = HTTPBasic()
 
 
@@ -151,9 +154,11 @@ async def readiness():
 
 
 @app.post("/rag")
+@limiter.limit("5/minute")
 async def rag(
     input: str,
     username: Annotated[str, Depends(get_current_username)],
+    request: Request,
 ) -> Output:
     response = app.state.rag_chain.invoke({"input": input})
     output = Output(
