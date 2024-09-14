@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Annotated
 
+import requests
 import yaml
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
@@ -175,6 +176,28 @@ async def rag(
         ],
     )
     return output
+
+
+def get_rag_response(
+    url: str, api_username: str, api_password: str, content: str
+) -> dict:
+    try:
+        response = requests.post(
+            url,
+            auth=(
+                api_username,
+                api_password,
+            ),
+            params={"input": content},
+            timeout=120,
+        )
+        try:
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.HTTPError as http_err:
+            return {"error": str(http_err), "response": response.json()}
+    except Exception as err:
+        return {"error": str(err)}
 
 
 class ReadinessFilter(logging.Filter):
