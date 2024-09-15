@@ -1,9 +1,11 @@
 import os
 
+import pandas as pd
 import streamlit as st
 
 from yt_rag.api.app import RAGError, RAGOutput, get_rag_response
 from yt_rag.settings import get_settings
+from yt_rag.yt.captions import WATCH_URL
 
 settings = get_settings()
 url = os.getenv("API_ENDPOINT", "http://localhost:5000/rag")
@@ -31,6 +33,7 @@ if prompt := st.chat_input():
         settings.api_password.get_secret_value(),
         st.session_state.messages[-1]["content"],
     )
+
     match response:
         case RAGError():
             st.error("An error occurred")
@@ -40,5 +43,18 @@ if prompt := st.chat_input():
                 {"role": "assistant", "content": response.answer}
             )
             st.chat_message("assistant").write(response.answer)
-            video_url = f"https://www.youtube.com/watch?v={response.context[0].video_id}"
-            st.video(video_url)
+            with st.expander("Context"):
+                df = pd.DataFrame(
+                    [document.model_dump() for document in response.context]
+                )
+                df["video_id"] = df["video_id"].apply(
+                    lambda x: WATCH_URL.format(video_id=x)
+                )
+                st.data_editor(
+                    df,
+                    column_config={
+                        "video_id": st.column_config.LinkColumn("video_id")
+                    },
+                    hide_index=True,
+                )
+            st.video(WATCH_URL.format(video_id=response.context[0].video_id))
