@@ -2,7 +2,7 @@ import os
 
 import streamlit as st
 
-from yt_rag.api.app import get_rag_response
+from yt_rag.api.app import RAGError, RAGOutput, get_rag_response
 from yt_rag.settings import get_settings
 
 settings = get_settings()
@@ -15,7 +15,7 @@ if "messages" not in st.session_state:
     st.session_state["messages"] = [
         {
             "role": "assistant",
-            "content": "Hello! I'm here to help you with any questions you have about ThePrimeagen, a YouTuber who creates content related to software engineering. Feel free to ask me anything, and I'll use transcriptions from his videos to provide you with accurate and helpful answers.",
+            "content": "Hello! I'm here to help you with any questions you have about [ThePrimeagen](https://www.youtube.com/@ThePrimeTimeagen), a YouTuber who creates content related to software engineering. Feel free to ask me anything, and I'll use transcriptions from his videos to provide you with accurate and helpful answers.",
         }
     ]
 
@@ -31,12 +31,14 @@ if prompt := st.chat_input():
         settings.api_password.get_secret_value(),
         st.session_state.messages[-1]["content"],
     )
-    if "error" in response:
-        st.error("An error occurred")
-        st.json(response["response"])
-    else:
-        msg = response["answer"]
-        st.session_state.messages.append({"role": "assistant", "content": msg})
-        st.chat_message("assistant").write(msg)
-        video_url = f'https://www.youtube.com/watch?v={response["context"][0]["video_id"]}'
-        st.video(video_url)
+    match response:
+        case RAGError():
+            st.error("An error occurred")
+            st.json(response.response)
+        case RAGOutput():
+            st.session_state.messages.append(
+                {"role": "assistant", "content": response.answer}
+            )
+            st.chat_message("assistant").write(response.answer)
+            video_url = f"https://www.youtube.com/watch?v={response.context[0].video_id}"
+            st.video(video_url)

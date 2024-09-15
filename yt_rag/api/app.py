@@ -26,7 +26,7 @@ from yt_rag.vs.retriever import create_vector_store_retriever
 settings = get_settings()
 
 
-class Input(BaseModel):
+class RAGInput(BaseModel):
     input: Annotated[
         str,
         Field(
@@ -71,7 +71,7 @@ class Document(BaseModel):
     ]
 
 
-class Output(BaseModel):
+class RAGOutput(BaseModel):
     answer: Annotated[
         str,
         Field(
@@ -80,6 +80,11 @@ class Output(BaseModel):
         ),
     ]
     context: list[Document]
+
+
+class RAGError(BaseModel):
+    error: str
+    response: dict = {}
 
 
 @asynccontextmanager
@@ -160,9 +165,9 @@ async def rag(
     input: str,
     username: Annotated[str, Depends(get_current_username)],
     request: Request,
-) -> Output:
+) -> RAGOutput:
     response = app.state.rag_chain.invoke({"input": input})
-    output = Output(
+    output = RAGOutput(
         answer=response["answer"],
         context=[
             Document(
@@ -180,7 +185,7 @@ async def rag(
 
 def get_rag_response(
     url: str, api_username: str, api_password: str, content: str
-) -> dict:
+) -> RAGOutput | RAGError:
     try:
         response = requests.post(
             url,
@@ -193,11 +198,11 @@ def get_rag_response(
         )
         try:
             response.raise_for_status()
-            return response.json()
+            return RAGOutput.model_validate(response.json())
         except requests.exceptions.HTTPError as http_err:
-            return {"error": str(http_err), "response": response.json()}
+            return RAGError(error=str(http_err), response=response.json())
     except Exception as err:
-        return {"error": str(err)}
+        return RAGError(error=str(err))
 
 
 class ReadinessFilter(logging.Filter):
