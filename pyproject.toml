@@ -53,7 +53,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 line-length = 79
-select =[
+lint.select =[
   "E", # pycodestyle errors
   "W", # pycodestyle warnings
   "F", # pyflakes
@@ -61,7 +61,7 @@ select =[
   "C", # flake8-comprehensions
   "S", # flake8-bandit
 ]
-ignore = [
+lint.ignore = [
   "S101", # use assert
   "E501", # line-too-long, handled by black
 ]
